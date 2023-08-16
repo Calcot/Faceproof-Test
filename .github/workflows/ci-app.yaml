@@ -29,7 +29,7 @@ env:
   probe_url: "/"
   app_secret: "fp-stg-secret"
   namespace: "fp"
-  port: 7000
+  port: 8000
 
 jobs:
   changes:
