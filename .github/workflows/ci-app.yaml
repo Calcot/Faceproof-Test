@@ -1,0 +1,129 @@
+name: CI APP
+
+on:
+  push:
+    branches:
+      - "main"
+
+  workflow_run:
+    workflows: [ "CLOUD" ]
+    types:
+      - completed
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  service: "test-fp"
+  owner: "Calcot"
+  repository: "Calcot-DevOps"
+  project: "calcottechstg"
+  region: "eu-west-1"
+  hostname-format: "test.fp.calcottech.com"
+  dockerfile: "./Dockerfile"
+  probe_url: "/"
+  app_secret: "fp-stg-secret"
+  namespace: "fp"
+  port: 7000
+
+jobs:
+  changes:
+    if: ${{ github.event.workflow_run.conclusion == 'success'  || github.event_name == 'push'  }}
+    runs-on: ubuntu-latest  # windows-latest | macos-latest
+    name: Test changed-files
+    outputs:
+      file-changed: ${{ steps.changed-files.outputs.any_changed }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: List all changed files
+        run: |
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "$file was changed"
+          done
+      - name: Get changed files API
+        id: changed-files
+        uses: tj-actions/changed-files@v35
+        with:
+          files: |
+            src/**
+            .github/workflows/**
+            public/**
+            docker/**
+            **.json
+
+      - name: Run step if any file(s) in the docs folder change
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "One or more files in the docs folder has changed."
+          echo "List all the files that have changed: ${{ steps.changed-files.outputs.all_changed_files }}"
+
+  envs:
+    name: "Envs"
+    needs: [ changes ]
+    if: ${{ needs.changes.outputs.file-changed || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    outputs:
+      owner: ${{ steps.variables.outputs.owner }}
+      repository: ${{ steps.variables.outputs.repository }}
+      instance_type: ${{ steps.variables.outputs.instance_type }}
+      project: ${{ steps.variables.outputs.project }}
+      region: ${{ steps.variables.outputs.region }}
+      service: ${{ steps.variables.outputs.service }}
+      port: ${{ steps.variables.outputs.port }}
+      hostname-format: ${{ steps.variables.outputs.hostname-format }}
+      dockerfile: ${{ steps.variables.outputs.dockerfile }}
+      docker_compose_file: ${{ steps.variables.outputs.docker_compose_file }}
+      probe_url: ${{ steps.variables.outputs.probe_url }}
+      app_secret: ${{ steps.variables.outputs.app_secret }}
+      namespace: ${{ steps.variables.outputs.namespace }}
+    steps:
+      - name: Set outputs
+        id: variables
+        run: |
+          echo "owner=${{ env.owner }}" >> $GITHUB_OUTPUT
+          echo "repository=${{ env.repository }}" >> $GITHUB_OUTPUT
+          echo "service=${{ env.service }}" >> $GITHUB_OUTPUT
+          echo "project=${{ env.project }}" >> $GITHUB_OUTPUT
+          echo "region=${{ env.region }}" >> $GITHUB_OUTPUT
+          echo "port=${{ env.port }}" >> $GITHUB_OUTPUT
+          echo "hostname-format=${{env.hostname-format}}" >> $GITHUB_OUTPUT
+          echo "instance_type=${{env.instance_type}}" >> $GITHUB_OUTPUT
+          echo "dockerfile=${{env.dockerfile}}" >> $GITHUB_OUTPUT
+          echo "docker_compose_file=${{env.docker_compose_file}}" >> $GITHUB_OUTPUT
+          echo "probe_url=${{env.probe_url}}" >> $GITHUB_OUTPUT
+          echo "app_secret=${{env.app_secret}}" >> $GITHUB_OUTPUT
+          echo "namespace=${{env.namespace}}" >> $GITHUB_OUTPUT
+
+  ci:
+    name: "CI"
+    permissions: write-all
+    needs: [ envs, changes ]
+    uses: ./.github/workflows/ci.yaml
+    with:
+      is_workflow: true
+      service: ${{ needs.envs.outputs.service }}
+      owner: ${{ needs.envs.outputs.owner }}
+      project: ${{ needs.envs.outputs.project }}
+      region: ${{ needs.envs.outputs.region }}
+      instance_type: ${{ needs.envs.outputs.instance_type }}
+      repository: ${{ needs.envs.outputs.repository }}
+      hostname-format: ${{ needs.envs.outputs.hostname-format }}
+      port:  ${{ needs.envs.outputs.port }}
+      dockerfile: ${{ needs.envs.outputs.dockerfile }}
+      docker_compose_file: ${{ needs.envs.outputs.docker_compose_file }}
+      app_secret: ${{ needs.envs.outputs.app_secret }}
+      namespace: ${{ needs.envs.outputs.namespace }}
+      probe_url: ${{ needs.envs.outputs.probe_url }}
+      buildCommand: "npm run build --if-present"
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      GH_CUSTOM_TOKEN: ${{ secrets.GH_CUSTOM_TOKEN }}
