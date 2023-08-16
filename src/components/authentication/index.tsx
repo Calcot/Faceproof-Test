@@ -5,7 +5,6 @@ import { isEmpty, startCase } from "lodash";
 import { FaceProofForm } from "../faceproof-form";
 import { useFaceproof } from "../../hooks/useFaceproof";
 import { RequestInterface } from "../../hooks/types.ts";
-import { DataURLToFile } from "../../utils/fn";
 
 // interface FaceproofAuthenticationProps {
 //
@@ -75,14 +74,11 @@ export const FaceProofAuthentication = () => {
 
   const onFinish = (values: Record<string, any>) => {
     if (image) {
-      // const [_, base64String] = image.split(",");
+      const [_, base64String] = image.split(",");
 
       console.log(image);
       const formData = new FormData();
-      formData.append(
-        "image",
-        DataURLToFile(image, "faceproof_reference_image.jpg"),
-      );
+      formData.append("image", base64String);
       formData.append("bvn", values.bvn);
 
       const options: Partial<RequestInterface> = {
