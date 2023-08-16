@@ -22,10 +22,7 @@ export const useFaceproof = createStore<PluginsState>(initialState)({
       const key = request.key ?? "@@plugin/faceproof/pld";
       const response = await faceproofPassiveLivenessDetection({
         key,
-        data: {
-          ...request.payload.data,
-          license_key: import.meta.env.VITE_FACEPROOF_API_KEY,
-        },
+        data: request.payload.data,
       });
 
       set(
@@ -39,10 +36,7 @@ export const useFaceproof = createStore<PluginsState>(initialState)({
     const key = request.key ?? "@@plugin/faceproof/face-auth";
     const response = await faceproofFaceAuth({
       key,
-      data: {
-        ...request.payload.data,
-        license_key: import.meta.env.VITE_FACEPROOF_API_KEY,
-      },
+      data: request.payload.data,
     });
 
     set(
@@ -56,10 +50,7 @@ export const useFaceproof = createStore<PluginsState>(initialState)({
     const key = request.key ?? "@@plugin/faceproof/face-comparison";
     const response = await faceproofFaceComparison({
       key,
-      data: {
-        ...request.payload.data,
-        license_key: import.meta.env.VITE_FACEPROOF_API_KEY,
-      },
+      data: request.payload.data,
     });
 
     set(

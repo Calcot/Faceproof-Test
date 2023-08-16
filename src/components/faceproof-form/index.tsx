@@ -113,6 +113,29 @@ export const FaceProofForm = (props: FaceproofFormProps) => {
               placeholder={"Enter your BVN (Bank Verification Number)"}
             />
           </Form.Item>
+
+          <Form.Item
+            name={"type"}
+            label={"Authentication Type"}
+            rules={[
+              {
+                required: true,
+                message: "Please select an authentication type",
+              },
+            ]}
+          >
+            <Select
+              placeholder={"Select an authentication type"}
+              options={[
+                {
+                  value: "passive_liveness_detection",
+                  label: "Passive Liveness Detection",
+                },
+                { value: "face_comparison", label: "ID Face Comparison" },
+                { value: "face_authentication", label: "Face Authentication" },
+              ]}
+            />
+          </Form.Item>
         </Form>
       )}
     </div>

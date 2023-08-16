@@ -1,9 +1,11 @@
 import { Button, Col, Form, notification, Row, Tooltip } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { CameraType } from "../camera/type";
-import { isEmpty } from "lodash";
+import { isEmpty, startCase } from "lodash";
 import { FaceProofForm } from "../faceproof-form";
 import { useFaceproof } from "../../hooks/useFaceproof";
+import { RequestInterface } from "../../hooks/types.ts";
+import { DataURLToFile } from "../../utils/fn";
 
 // interface FaceproofAuthenticationProps {
 //
@@ -22,13 +24,17 @@ export const FaceProofAuthentication = () => {
   const [form] = Form.useForm();
   const [notificationAPI, notificationContext] = notification.useNotification();
 
-  const { faceProofing, faceproofPassiveLivenessDetection } = useFaceproof(
-    (state: any) => ({
-      faceProofing: state.loading[`${KEY}/faceproof`],
-      faceproofPassiveLivenessDetection:
-        state.faceproofPassiveLivenessDetection,
-    }),
-  );
+  const {
+    faceProofing,
+    faceproofPassiveLivenessDetection,
+    faceproofFaceComparison,
+    faceproofFaceAuth,
+  } = useFaceproof((state: any) => ({
+    faceProofing: state.loading[`${KEY}/faceproof`],
+    faceproofPassiveLivenessDetection: state.faceproofPassiveLivenessDetection,
+    faceproofFaceAuth: state.faceproofFaceAuth,
+    faceproofFaceComparison: state.faceproofFaceComparison,
+  }));
 
   useEffect(() => {
     (async () => {
@@ -69,26 +75,49 @@ export const FaceProofAuthentication = () => {
 
   const onFinish = (values: Record<string, any>) => {
     if (image) {
-      const [_, base64String] = image.split(",");
-      faceproofPassiveLivenessDetection({
+      // const [_, base64String] = image.split(",");
+
+      console.log(image);
+      const formData = new FormData();
+      formData.append(
+        "image",
+        DataURLToFile(image, "faceproof_reference_image.jpg"),
+      );
+      formData.append("bvn", values.bvn);
+
+      const options: Partial<RequestInterface> = {
         key: `${KEY}/faceproof`,
         payload: {
-          data: { ...values, image: base64String },
+          data: formData,
         },
         params: { get_face: true },
-        onFinish(response: any) {
-          console.log({ response });
-        },
-        onError(response: any) {
-          notificationAPI.error({
-            message:
-              response?.detail ??
-              "Something went wrong with faceproof, please try again",
+        onFinish() {
+          notificationAPI.success({
+            message: startCase(values.type.split("_").join(" ")),
             duration: 5,
             placement: "bottomLeft",
           });
         },
-      });
+        onError() {
+          notificationAPI.error({
+            message: "Something went wrong with faceproof, please try again",
+            duration: 5,
+            placement: "bottomLeft",
+          });
+        },
+      };
+
+      switch (values.type) {
+        case "passive_liveness_detection":
+          faceproofPassiveLivenessDetection(options);
+          break;
+        case "face_comparison":
+          faceproofFaceAuth(options);
+          break;
+        case "face_authentication":
+          faceproofFaceComparison(options);
+          break;
+      }
     }
   };
 
@@ -97,7 +126,7 @@ export const FaceProofAuthentication = () => {
       {notificationContext}
       <section
         className={"flex flex-col gap-y-3 py-20"}
-        style={{ height: "65vh", maxHeight: "65vh", width: "55vh" }}
+        style={{ height: "80vh", maxHeight: "100vh", width: "55vh" }}
       >
         <div className="flex item-center gap-x-4 w-full">
           {approveImage && (
