@@ -46,7 +46,7 @@ export function faceproofFaceComparison(config: RequestConfig) {
       "x-api-key": import.meta.env.VITE_FACEPROOF_API_KEY,
       "x-app-id": import.meta.env.VITE_FACEPROOF_APP_ID,
     },
-    url: `${import.meta.env.VITE_FACEPROOF_URL}/basic/face_comparison`,
+    url: `${import.meta.env.VITE_FACEPROOF_URL}/id/face_comparison`,
   });
   return createApiRequest(_config);
 }
