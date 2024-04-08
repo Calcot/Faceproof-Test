@@ -141,7 +141,7 @@ export const FaceProofAuthentication = () => {
             </Tooltip>
           )}
           <h1 className={"text-center w-full !my-0 !py-0 !leading-0"}>
-            Faceproof Liveness Detection
+          NFace Web Demo
           </h1>
         </div>
         <FaceProofForm
