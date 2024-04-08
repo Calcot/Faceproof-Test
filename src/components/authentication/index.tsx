@@ -78,15 +78,15 @@ export const FaceProofAuthentication = () => {
 
       console.log(image);
       const formData = new FormData();
-      formData.append("image", base64String);
-      formData.append("bvn", values.bvn);
+      formData.append("image", `${base64String}`);
+       formData.append("bvn", `${values.bvn}`);
 
       const options: Partial<RequestInterface> = {
         key: `${KEY}/faceproof`,
         payload: {
           data: formData,
         },
-        params: { get_face: true },
+        // params: { get_face: true },
         onFinish() {
           notificationAPI.success({
             message: startCase(values.type.split("_").join(" ")),

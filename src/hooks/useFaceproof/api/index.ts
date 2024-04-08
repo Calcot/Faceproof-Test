@@ -11,8 +11,8 @@ export function faceproofPassiveLivenessDetection(config: RequestConfig) {
     method: "POST",
     headers: {
       "x-image-type": "base64",
-      "x-api-key": import.meta.env.VITE_FACEPROOF_API_KEY,
-      "x-app-id": import.meta.env.VITE_FACEPROOF_APP_ID,
+      "x-passive-liveness-detection-threshold":0.6,
+   
     },
     url: `${
       import.meta.env.VITE_FACEPROOF_URL
@@ -28,8 +28,9 @@ export function faceproofFaceAuth(config: RequestConfig) {
     method: "POST",
     headers: {
       "x-image-type": "base64",
-      "x-api-key": import.meta.env.VITE_FACEPROOF_API_KEY,
-      "x-app-id": import.meta.env.VITE_FACEPROOF_APP_ID,
+      "x-passive-liveness-detection-threshold":0.6,
+      "x-face-comparison-threshold":0.8,
+      // "x-app-id": import.meta.env.VITE_FACEPROOF_APP_ID,
     },
     url: `${import.meta.env.VITE_FACEPROOF_URL}/id/face_authentication`,
   });
@@ -43,8 +44,7 @@ export function faceproofFaceComparison(config: RequestConfig) {
     method: "POST",
     headers: {
       "x-image-type": "base64",
-      "x-api-key": import.meta.env.VITE_FACEPROOF_API_KEY,
-      "x-app-id": import.meta.env.VITE_FACEPROOF_APP_ID,
+      "x-face-comparison-threshold":0.8,
     },
     url: `${import.meta.env.VITE_FACEPROOF_URL}/id/face_comparison`,
   });
