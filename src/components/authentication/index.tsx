@@ -108,10 +108,10 @@ export const FaceProofAuthentication = () => {
           faceproofPassiveLivenessDetection(options);
           break;
         case "face_comparison":
-          faceproofFaceAuth(options);
+          faceproofFaceComparison(options);
           break;
         case "face_authentication":
-          faceproofFaceComparison(options);
+          faceproofFaceAuth(options);
           break;
       }
     }
